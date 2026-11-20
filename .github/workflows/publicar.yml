@@ -11,8 +11,17 @@ jobs:
     steps:
       - name: Baixar e verificar pacote
         run: |
-          curl -fL --retry 3 -o Lucsylo-Windows.zip "https://www.tempsend.com/hzfjhueu/eb9323/1795145715/Lucsylo-Windows.zip"
-          echo "266818ebed20a6f678466a2f196c3ee21cc60660d50b87474667dff0906f99e3  Lucsylo-Windows.zip" | sha256sum -c -
+          python3 - <<PY
+          import urllib.request, re, hashlib
+          page = urllib.request.urlopen("https://www.tempsend.com/hzfjhueu").read().decode()
+          match = re.search(r"href=\"(https://www\.tempsend\.com/[^\"]+/Lucsylo-Windows\.zip)\"", page)
+          if not match:
+              raise RuntimeError("Link de download não encontrado")
+          urllib.request.urlretrieve(match.group(1), "Lucsylo-Windows.zip")
+          with open("Lucsylo-Windows.zip", "rb") as f:
+              digest = hashlib.file_digest(f, "sha256").hexdigest()
+          assert digest == "266818ebed20a6f678466a2f196c3ee21cc60660d50b87474667dff0906f99e3", "Arquivo não confere"
+          PY
       - name: Publicar versão
         env:
           GH_TOKEN: ${{ github.token }}
