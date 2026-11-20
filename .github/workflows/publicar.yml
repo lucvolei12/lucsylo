@@ -1,0 +1,23 @@
+name: Publicar Lucsylo
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar e verificar pacote
+        run: |
+          curl -fL --retry 3 -o Lucsylo-Windows.zip "https://www.tempsend.com/hzfjhueu/eb9323/1795145715/Lucsylo-Windows.zip"
+          echo "266818ebed20a6f678466a2f196c3ee21cc60660d50b87474667dff0906f99e3  Lucsylo-Windows.zip" | sha256sum -c -
+      - name: Publicar versão
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if ! gh release view v0.1.0 >/dev/null 2>&1; then
+            gh release create v0.1.0 Lucsylo-Windows.zip --title "Lucsylo 0.1.0" --notes "Versão inicial para Windows 10 e 11 de 64 bits. Aplicativo ainda não testado em Windows e sem assinatura digital."
+          fi
