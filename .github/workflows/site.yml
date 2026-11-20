@@ -1,0 +1,28 @@
+name: Preparar site
+on:
+  push:
+    paths:
+      - .github/workflows/site.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+jobs:
+  configurar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copiar site e imagem
+        run: |
+          curl -fsSL https://wcbp2o62bzdirhphpe3xzi4qvi.content.toqi.life/v/5/ -o index.html
+          curl -fsSL https://wcbp2o62bzdirhphpe3xzi4qvi.content.toqi.life/v/5/avatar.jpg -o avatar.jpg
+          grep -q "github.com/lucvolei12/lucsylo/releases/download/v0.1.0/Lucsylo-Windows.zip" index.html
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html avatar.jpg
+          git diff --cached --quiet || { git commit -m "Adicionar site do Lucsylo" && git push; }
+      - name: Ativar GitHub Pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh api --method POST "repos/$GH_REPO/pages" -f "source[branch]=main" -f "source[path]=/"
